@@ -236,8 +236,7 @@ public class CriticsOverlayViewMenu {
 						updatedMethodBodyStms = UTStr.replace(updatedMethodBodyStms, missingInsertionNodeStr, startIndex, endIndex);						
 					}
 					System.out.println("[DBG6] updated method body statements: \n" + updatedMethodBodyStms);
-					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);
-					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);
+					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);			
 				}
 			}
 		});
