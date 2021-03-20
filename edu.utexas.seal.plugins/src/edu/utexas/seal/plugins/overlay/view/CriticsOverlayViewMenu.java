@@ -237,7 +237,6 @@ public class CriticsOverlayViewMenu {
 					}
 					System.out.println("[DBG6] updated method body statements: \n" + updatedMethodBodyStms);
 					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);
-					//Test comment4
 				}
 			}
 		});
