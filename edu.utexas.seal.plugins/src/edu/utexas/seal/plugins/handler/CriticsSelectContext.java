@@ -546,23 +546,33 @@ public class CriticsSelectContext extends CriticsCommonHandler {
 	private void getEditsFromQTree() {
 		mChanges = mChangeDistiller.diffBlock(qTreeOldRev.copy(), qTreeNewRev.copy());
 		mMatches = mChangeDistiller.getMatches();
-
+		System.out.println("[DBG CriticsSelectContext.getEditsFromQTree()] qTreeOldRev range: " + qTreeOldRev.getEntity().getSourceRange());
+		System.out.println("[DBG CriticsSelectContext.getEditsFromQTree()] qTreeNewRev range: " + qTreeNewRev.getEntity().getSourceRange());
+		
 		File fOldRev = UTCriticsPairFileInfo.getRightFile();
 		String srcOldRev = UTFile.getContents(fOldRev.getAbsolutePath());
-		CompilationUnit unitOldRev = new UTASTParser().parse(srcOldRev);
+		CompilationUnit unitOldRev = new UTASTParser().parse(srcOldRev);	
+		String srcOldViewer = rightSRViewer.getDocument().get();
+		System.out.println("[DBG CriticsSelectContext.getEditsFromQTree()] qTreeOldRev from srcOldViewer: \n" + srcOldViewer.substring(qTreeOldRev.getEntity().getStartPosition(), qTreeOldRev.getEntity().getEndPosition() + 1));
 
 		File fNewRev = UTCriticsPairFileInfo.getLeftFile();
 		String srcNewRev = UTFile.getContents(fNewRev.getAbsolutePath());
 		CompilationUnit unitNewRev = new UTASTParser().parse(srcNewRev);
-
+		String srcNewViewer = leftSRViewer.getDocument().get();
+		//System.out.println("[DBG CriticsSelectContext.getEditsFromQTree()] qTreeNewRev from srcNewRev: \n" + srcNewRev.substring(qTreeNewRev.getEntity().getStartPosition(), qTreeNewRev.getEntity().getEndPosition() + 1));
+		System.out.println("[DBG CriticsSelectContext.getEditsFromQTree()] qTreeNewRev from srcNewViewer: \n" + srcNewViewer.substring(qTreeNewRev.getEntity().getStartPosition(), qTreeNewRev.getEntity().getEndPosition() + 1));
+		
 		mInsertList = mChangeDistiller.getInsertList();
+		
 		mDeleteList = mChangeDistiller.getDeleteList();
-
-		mInsertNodeList = UTChange.getNodeListMethodLevel(mInsertList, unitNewRev, srcNewRev, fNewRev);
-		mDeleteNodeList = UTChange.getNodeListMethodLevel(mDeleteList, unitOldRev, srcOldRev, fOldRev);
-
+		
+		//mInsertNodeList = UTChange.getNodeListMethodLevel(mInsertList, unitNewRev, srcNewRev, fNewRev);		
+		mInsertNodeList = UTChange.getNodeListMethodLevel(mInsertList, unitNewRev, srcNewViewer, fNewRev);
+		//mDeleteNodeList = UTChange.getNodeListMethodLevel(mDeleteList, unitOldRev, srcOldRev, fOldRev);
+		mDeleteNodeList = UTChange.getNodeListMethodLevel(mDeleteList, unitOldRev, srcOldViewer, fOldRev);
+		
 		UTLog.println(false, "[DBG0] INSERT");
-		UTChange.printNode(mInsertNodeList, false);
+		UTChange.printNode(mInsertNodeList, false);		
 		UTLog.println(false, "[DBG1] DELETE");
 		UTChange.printNode(mDeleteNodeList, false);
 
@@ -737,7 +747,7 @@ public class CriticsSelectContext extends CriticsCommonHandler {
 		MethodDeclaration m = nodeFinder.findMethod(iunit, region, isPrintable);
 		File fileOldRev = UTCriticsPairFileInfo.getRightFile();
 		qTreeOldRev = nodeConverter.convertMethod(m, src, fileOldRev);
-		UTLog.println(isPrintable, "[DBG] LEFT TREE QUERY REPRESENTATION");
+		UTLog.println(isPrintable, "[DBG] RIGHT TREE QUERY REPRESENTATION");
 		// nodeOperation.markAliveToTreeNode(queryTreeOldRev, contextASTNodesOldRev);
 		analyzer.analyzeOldMethod(qTreeOldRev);
 		nodeOperation.pruneDensityOfTreeNode(qTreeOldRev, isPrintable);
@@ -768,10 +778,19 @@ public class CriticsSelectContext extends CriticsCommonHandler {
 		ICompilationUnit iunit = UTCriticsPairFileInfo.getLeftICompilationUnit();
 		Point region = leftSelectedRegion;
 		String src = leftSRViewer.getDocument().get();
-		MethodDeclaration m = nodeFinder.findMethod(iunit, region, isPrintable);
+		MethodDeclaration m = nodeFinder.findMethod(iunit, region, isPrintable);		
+//		System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] m.getStartPosition(): " + m.getStartPosition());
+//		System.out.printf("[DBG CriticsSelectContext.processQueryTreeNewRev()] m endPosition: %d\n", m.getStartPosition() + m.getLength());
+//		System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] m String: \n" + src.substring(m.getStartPosition(), m.getStartPosition() + m.getLength()));
+//		System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] src.length(): " + src.length());
 		File fileNewRev = UTCriticsPairFileInfo.getLeftFile();
+//		System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] fileNewRev.getAbsolutePath(): " + fileNewRev.getAbsolutePath());
+//		String srcNewRev = UTFile.getContents(fileNewRev.getAbsolutePath());
+//		System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] m String: \n" + srcNewRev.substring(m.getStartPosition(), m.getStartPosition() + m.getLength()));
+//		System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] srcNewRev.length(): " + srcNewRev.length());		
 		qTreeNewRev = nodeConverter.convertMethod(m, src, fileNewRev);
-		UTLog.println(isPrintable, "[DBG] RIGHT TREE QUERY REPRESENTATION");
+		//System.out.println("[DBG CriticsSelectContext.processQueryTreeNewRev()] qTreeNewRev range: " + qTreeNewRev.getEntity().getSourceRange());
+		UTLog.println(isPrintable, "[DBG] LEFT TREE QUERY REPRESENTATION");
 		// nodeOperation.markAliveToTreeNode(queryTreeNewRev, contextASTNodesNewRev);
 		analyzer.analyzeNewMethod(qTreeNewRev);
 		nodeOperation.pruneDensityOfTreeNode(qTreeNewRev, isPrintable);

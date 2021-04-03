@@ -38,7 +38,11 @@ package edu.utexas.seal.plugins.overlay.view;
 import java.io.File;
 import java.util.List;
 
+import org.eclipse.compare.internal.MergeSourceViewer;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TableViewer;
@@ -64,6 +68,7 @@ import edu.utexas.seal.plugins.analyzer.ReplaceMethodBodyAnalyzer;
 import edu.utexas.seal.plugins.overlay.model.CriticsCBTreeHelper;
 import edu.utexas.seal.plugins.overlay.model.CriticsCBTreeNode;
 import edu.utexas.seal.plugins.util.UTCriticsPairFileInfo;
+import edu.utexas.seal.plugins.util.UTCriticsTextSelection;
 import edu.utexas.seal.plugins.util.root.UTCriticsEditor;
 
 /**
@@ -161,14 +166,45 @@ public class CriticsOverlayViewMenu {
 					String packageName = selectedRightRev.getPackageName();
 					System.out.println("[DBG6] Selected Incorrect Updated Method: " + "[" + packageName + "]" + "[" + className + "]" + "[" + value + "]");
 					Node selectedLeftRev = mCriticsOverlayView.mEventHandler.getOppositeNode(tSelected);
-					System.out.println("[DBG6] old Node selectedRightRev: " + selectedRightRev);
-					System.out.println("[DBG6] new Node selectedLeftRev: " + selectedLeftRev);
-					String oldMethodBody = selectedRightRev.getMethodDeclaration().getBody().toString();
+					System.out.println("[DBG6] old Node selectedRightRev: " + selectedRightRev + " source range: " + selectedRightRev.getEntity().getSourceRange());
+					System.out.println("[DBG6] new Node selectedLeftRev: " + selectedLeftRev + " source range: " + selectedLeftRev.getEntity().getSourceRange());
+					
+					File fOldRev = UTCriticsPairFileInfo.getRightFile();
+					String srcOldFile = UTFile.getContents(fOldRev.getAbsolutePath());
+					System.out.println("[DBG6] srcOldFile.length(): " + srcOldFile.length());
+					File fNewRev = UTCriticsPairFileInfo.getLeftFile();
+					String srcNewFile = UTFile.getContents(fNewRev.getAbsolutePath());
+					System.out.println("[DBG6] srcNewFile.length(): " + srcNewFile.length());
+
+					MergeSourceViewer rightMSViewer = UTCriticsTextSelection.rightMergeSourceViewer;
+					ISourceViewer rightSRViewer = rightMSViewer.getSourceViewer();
+					String srcOldViewer = rightSRViewer.getDocument().get();
+					System.out.println("[DBG6] srcOldViewer.length(): " + srcOldViewer.length());
+					MergeSourceViewer leftMSViewer = UTCriticsTextSelection.leftMergeSourceViewer;
+					ISourceViewer leftSRViewer = leftMSViewer.getSourceViewer();
+					String srcNewViewer = leftSRViewer.getDocument().get();
+					System.out.println("[DBG6] srcNewViewer.length(): " + srcNewViewer.length());
+
+					
+					MethodDeclaration oldMethodDecl = selectedRightRev.getMethodDeclaration();
+					MethodDeclaration newMethodDecl = selectedLeftRev.getMethodDeclaration();
+					System.out.println("[DBG6] oldMethodDecl: \n" + srcOldFile.substring(oldMethodDecl.getStartPosition(), oldMethodDecl.getStartPosition() + oldMethodDecl.getLength()));
+					System.out.println("[DBG6] newMethodDecl: \n" + srcNewFile.substring(newMethodDecl.getStartPosition(), newMethodDecl.getStartPosition() + newMethodDecl.getLength()));
+					System.out.println("[DBG6] selectedRightRev: \n" + srcOldFile.substring(selectedRightRev.getEntity().getStartPosition(), selectedRightRev.getEntity().getEndPosition() + 1));
+					System.out.println("[DBG6] selectedLeftRev: \n" + srcNewFile.substring(selectedLeftRev.getEntity().getStartPosition(), selectedLeftRev.getEntity().getEndPosition() + 1));
+					
+					String oldMethodBody = oldMethodDecl.getBody().toString();
 					String oldMethodBodyStms = oldMethodBody.substring(1, oldMethodBody.length() - 2);
-					String newMethodBody = selectedLeftRev.getMethodDeclaration().getBody().toString();
+					String newMethodBody = newMethodDecl.getBody().toString();
 					String newMethodBodyStms = newMethodBody.substring(1, newMethodBody.length() - 2);					
 					System.out.println("[DBG6] old method body statements: \n" + oldMethodBodyStms);
 					System.out.println("[DBG6] new method body statements: \n" + newMethodBodyStms);
+					List<Statement> lstOldStms = oldMethodDecl.getBody().statements();					
+					String oldMethodBodyStms2 = srcOldFile.substring(lstOldStms.get(0).getStartPosition(), lstOldStms.get(lstOldStms.size()-1).getStartPosition() + lstOldStms.get(lstOldStms.size()-1).getLength());
+					System.out.println("[DBG6] old method body statements2: \n" + oldMethodBodyStms2);
+					List<Statement> lstNewStms = newMethodDecl.getBody().statements();
+					String newMethodBodyStms2 = srcNewFile.substring(lstNewStms.get(0).getStartPosition(), lstNewStms.get(lstNewStms.size()-1).getStartPosition() + lstNewStms.get(lstNewStms.size()-1).getLength());
+					System.out.println("[DBG6] new method body statements2: \n" + newMethodBodyStms2);
 					
 					//UTChangeDistiller diffTTree = new UTChangeDistiller();
 					//diffTTree.diffBlock(selectedRightRev.copy(), selectedLeftRev.copy()); // right -> left
@@ -194,19 +230,24 @@ public class CriticsOverlayViewMenu {
 					List<Node> missingInsertionNodes = mCriticsOverlayView.mEventHandler.getMissingInsertionNodes();		
 					List<Node> missingDeletionNodes = mCriticsOverlayView.mEventHandler.getMissingDeletionNodes();
 					for (Node iNode : incorrectInsertionNodes) {
-						System.out.println("[DBG6] incorrectInsertionNode: " + iNode);
+						System.out.println("[DBG6] incorrectInsertionNode: " + iNode + " source range: " + iNode.getEntity().getSourceRange());
+						System.out.println("[DBG6] incorrectInsertionNode String: \n" + srcNewFile.substring(iNode.getEntity().getStartPosition(), iNode.getEntity().getEndPosition() + 1));
 					}
 					for (Node iNode : incorrectDeletionNodes) {
-						System.out.println("[DBG6] incorrectDeletionNode: " + iNode);
+						System.out.println("[DBG6] incorrectDeletionNode: " + iNode + " source range: " + iNode.getEntity().getSourceRange());
+						System.out.println("[DBG6] incorrectDeletionNode String: \n" + srcOldFile.substring(iNode.getEntity().getStartPosition(), iNode.getEntity().getEndPosition() + 1));
 					}
 					for (Node iNode : missingInsertionNodes) {
-						System.out.println("[DBG6] missingInsertionNode: " + iNode);
+						System.out.println("[DBG6] missingInsertionNode: " + iNode + " source range: " + iNode.getEntity().getSourceRange());
+						System.out.println("[DBG6] missingInsertionNode String: \n" + srcNewViewer.substring(iNode.getEntity().getStartPosition(), iNode.getEntity().getEndPosition() + 1));
 					}
 					for (Node iNode : missingDeletionNodes) {
-						System.out.println("[DBG6] missingDeletionNode: " + iNode);
+						System.out.println("[DBG6] missingDeletionNode: " + iNode + " source range: " + iNode.getEntity().getSourceRange());
+						System.out.println("[DBG6] missingDeletionNode String: \n" + srcNewFile.substring(iNode.getEntity().getStartPosition(), iNode.getEntity().getEndPosition() + 1));
 					}
 					
 					String updatedMethodBodyStms = newMethodBodyStms;
+					String updatedMethodBodyStms2 = newMethodBodyStms2;
 					for (int i = 0; i < incorrectInsertionNodes.size(); i++) {
 						Node incorrectInsertionNode = incorrectInsertionNodes.get(i);
 						Node missingInsertionNode = missingInsertionNodes.get(i);	
@@ -233,9 +274,19 @@ public class CriticsOverlayViewMenu {
 						System.out.println("[DBG6] missingInsertionNodeStr: " + missingInsertionNodeStr);
 						int startIndex = newMethodBodyStms.indexOf(incorrectInsertionNodeStr);												
 						int endIndex = startIndex + incorrectInsertionNodeStr.length();
+						System.out.println("[DBG6] startIndex: " + startIndex + " endIndex: " + endIndex);
+						
+						String incorrectInsertionNodeStr2 = srcNewFile.substring(incorrectInsertionNode.getEntity().getStartPosition(), incorrectInsertionNode.getEntity().getEndPosition() + 1);
+						String missingInsertionNodeStr2 = srcNewViewer.substring(missingInsertionNode.getEntity().getStartPosition(), missingInsertionNode.getEntity().getEndPosition() + 1);
+						int startIndex2 =  incorrectInsertionNode.getEntity().getStartPosition() - lstNewStms.get(0).getStartPosition();
+						int endIndex2 = startIndex2 + incorrectInsertionNodeStr2.length();
+						System.out.println("[DBG6] startIndex2: " + startIndex2 + " endIndex2: " + endIndex2);						
+						System.out.println("[DBG6] newMethodBodyStms2.substring(startIndex2, endIndex2): \n" + newMethodBodyStms2.substring(startIndex2, endIndex2));
 						updatedMethodBodyStms = UTStr.replace(updatedMethodBodyStms, missingInsertionNodeStr, startIndex, endIndex);						
+						updatedMethodBodyStms2 = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodeStr2, startIndex2, endIndex2);
 					}
 					System.out.println("[DBG6] updated method body statements: \n" + updatedMethodBodyStms);
+					System.out.println("[DBG6] updated method body statements2: \n" + updatedMethodBodyStms2);
 					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);
 				}
 			}

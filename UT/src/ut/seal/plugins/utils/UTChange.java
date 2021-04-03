@@ -34,6 +34,7 @@ import java.util.Enumeration;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.swt.graphics.Point;
 import org.junit.Test;
@@ -42,9 +43,14 @@ import ut.seal.plugins.utils.UTCriticsDiffUtil.Diff;
 import ut.seal.plugins.utils.UTCriticsDiffUtil.Operation;
 import ut.seal.plugins.utils.ast.UTASTNodeConverter;
 import ut.seal.plugins.utils.ast.UTASTNodeFinder;
+import ut.seal.plugins.utils.ast.UTASTParser;
+import ch.uzh.ifi.seal.changedistiller.model.classifiers.SourceRange;
 import ch.uzh.ifi.seal.changedistiller.model.classifiers.java.JavaEntityType;
 import ch.uzh.ifi.seal.changedistiller.model.entities.SourceCodeChange;
+import ch.uzh.ifi.seal.changedistiller.model.entities.SourceCodeEntity;
 import ch.uzh.ifi.seal.changedistiller.treedifferencing.Node;
+import edu.utexas.seal.plugins.util.visitor.UTGeneralVisitor;
+import edu.utexas.seal.plugins.util.visitor.UTIGeneralVisitor;
 
 /**
  * The Class UTChange.
@@ -158,7 +164,9 @@ public class UTChange {
 			if (methodNode == null) {
 				methodNode = getMethodNode(iChange, aUnitMatchedNode, aSrcMatchedNode, aFile);
 			}
+			//System.out.println("[DBG UTChange.getNodeListMethodLevel()] methodNode: " + methodNode);
 			Node nodes = getChildNode(iChange, methodNode);
+			//System.out.println("[DBG UTChange.getNodeListMethodLevel()] nodes: " + nodes);
 			lstNode.add(nodes);
 		}
 		return lstNode;
@@ -175,11 +183,42 @@ public class UTChange {
 	 */
 	private static Node getMethodNode(SourceCodeChange change, CompilationUnit aUnit, String aSource, File aFile) {
 		String message = "[WRN] null pointing";
+		
+		System.out.println("[DBG UTChange.getMethodNode()] change: " + change);
+		System.out.println("[DBG UTChange.getMethodNode()] change.getChangeType(): " + change.getChangeType());
+		//System.out.println("[DBG UTChange.getMethodNode()] change.getLabel(): " + change.getLabel());
+		//System.out.println("[DBG UTChange.getMethodNode()] change.getParentEntity(): " + change.getParentEntity());
+		SourceCodeEntity sce = change.getChangedEntity();
+		System.out.println("[DBG UTChange.getMethodNode()] sce: " + sce);
+		System.out.println("[DBG UTChange.getMethodNode()] sce.getUniqueName(): " + sce.getUniqueName());
+		System.out.println("[DBG UTChange.getMethodNode()] sce.getSourceRange(): " + sce.getSourceRange());
+		//System.out.println("[DBG UTChange.getMethodNode()] sce.getStartPosition(): " + sce.getStartPosition());
+		//System.out.println("[DBG UTChange.getMethodNode()] sce.getEndPosition(): " + sce.getEndPosition());
+		System.out.println("[DBG UTChange.getMethodNode()] sce.getType(): " + sce.getType());				
 		int startPosition = change.getChangedEntity().getStartPosition();
+		//System.out.println("[DBG UTChange.getMethodNode()] startPosition: " + startPosition);		
+		System.out.println("[DBG UTChange.getMethodNode()] CompilationUnit Length: " + aUnit.getLength());
+		//String aUnitStr = aUnit.toString();
+		//System.out.println("[DBG UTChange.getMethodNode()] CompilationUnit String Length: " + aUnitStr.length());
+		System.out.println("[DBG UTChange.getMethodNode()] aSource Length: " + aSource.length());
+		System.out.println("[DBG UTChange.getMethodNode()] Selected SourceCodeEntity String: \n" + aSource.substring(sce.getStartPosition(), sce.getEndPosition() + 1));
 		int defaultLength = 1;
 		UTASTNodeFinder finder = new UTASTNodeFinder();
 		UTASTNodeConverter converter = new UTASTNodeConverter();
-		MethodDeclaration methodDecl = finder.findCoveringMethodDeclaration(aUnit, new Point(startPosition, defaultLength));
+		//MethodDeclaration methodDecl = finder.findCoveringMethodDeclaration(aUnit, new Point(startPosition, defaultLength));
+		MethodDeclaration methodDecl = finder.findMethod(aSource, change.getChangedEntity().getSourceRange(), false);
+		//String srcRev = UTFile.getContents(aFile.getAbsolutePath());
+		System.out.println("[DBG UTChange.getMethodNode()] methodDecl: " + methodDecl.getName().getFullyQualifiedName());
+		//System.out.println("[DBG UTChange.getMethodNode()] methodDecl startPosition: " + methodDecl.getStartPosition());
+		//System.out.printf("[DBG UTChange.getMethodNode()] methodDecl endPosition: %d\n", methodDecl.getStartPosition() + methodDecl.getLength());
+		//System.out.println("[DBG UTChange.getMethodNode()] methodDecl String: \n" + srcRev.substring(methodDecl.getStartPosition(), methodDecl.getStartPosition() + methodDecl.getLength()));
+//		List<IfStatement> lstIfStatement = findIfStatement(methodDecl);
+//		for (IfStatement ifStmt : lstIfStatement) {
+//			System.out.println("[DBG UTChange.getMethodNode()] ifStmt startPosition: " + ifStmt.getStartPosition());
+//			System.out.printf("[DBG UTChange.getMethodNode()] ifStmt endPosition: %d\n", ifStmt.getStartPosition() + ifStmt.getLength());
+//			System.out.println("[DBG UTChange.getMethodNode()] ifStmt: \n" + ifStmt);
+//			System.out.println("[DBG UTChange.getMethodNode()] ifStmt String: \n" + srcRev.substring(ifStmt.getStartPosition(), ifStmt.getStartPosition() + ifStmt.getLength()));
+//		}				
 		if (methodDecl == null)
 			throw new RuntimeException(message);
 		Node resultNodeConverted = converter.convertMethod(methodDecl, aSource, aFile);
@@ -188,6 +227,17 @@ public class UTChange {
 		return resultNodeConverted;
 	}
 
+	private static List<IfStatement> findIfStatement(MethodDeclaration methodDecl) {
+		UTIGeneralVisitor<IfStatement> mVisitor = new UTGeneralVisitor<IfStatement>() {
+			public boolean visit(IfStatement node) {
+				results.add(node);
+				return true;
+			}
+		};
+		methodDecl.accept(mVisitor);
+		return mVisitor.getResults();
+	}
+	
 	/**
 	 * Gets the child node.
 	 * 
@@ -232,6 +282,12 @@ public class UTChange {
 		for (int i = 0; i < aList.size(); i++) {
 			Node change = aList.get(i);
 			UTLog.println(isPrnt, "[RST] " + change.getEntity().getLabel() + " " + change.getEntity().getUniqueName());
+//			if (change != null) {
+//				System.out.println("[RST] " + change.getEntity().getLabel() + " " + change.getEntity().getUniqueName());
+//			}
+//			else {
+//				System.out.println("[RST] change is null!");
+//			}			
 		}
 	}
 }
