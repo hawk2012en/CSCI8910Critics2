@@ -39,7 +39,9 @@ import java.io.File;
 import java.util.List;
 
 import org.eclipse.compare.internal.MergeSourceViewer;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -64,7 +66,9 @@ import ut.seal.plugins.utils.change.UTChangeDistiller;
 import ut.seal.plugins.utils.visitor.DeclarationVisitor;
 import ch.uzh.ifi.seal.changedistiller.model.classifiers.java.JavaEntityType;
 import ch.uzh.ifi.seal.changedistiller.treedifferencing.Node;
+import ch.uzh.ifi.seal.changedistiller.treedifferencing.NodeForStmt;
 import edu.utexas.seal.plugins.analyzer.ReplaceMethodBodyAnalyzer;
+import edu.utexas.seal.plugins.crystal.internal.UTASTNodeSearcher;
 import edu.utexas.seal.plugins.overlay.model.CriticsCBTreeHelper;
 import edu.utexas.seal.plugins.overlay.model.CriticsCBTreeNode;
 import edu.utexas.seal.plugins.util.UTCriticsPairFileInfo;
@@ -206,6 +210,13 @@ public class CriticsOverlayViewMenu {
 					String newMethodBodyStms2 = srcNewFile.substring(lstNewStms.get(0).getStartPosition(), lstNewStms.get(lstNewStms.size()-1).getStartPosition() + lstNewStms.get(lstNewStms.size()-1).getLength());
 					System.out.println("[DBG6] newMethodBodyStms2: \n" + newMethodBodyStms2);
 					
+					Node mQTreeLeftRev = mCriticsOverlayView.getQTreeNewRev();
+					Node mQTreeRightRev = mCriticsOverlayView.getQTreeOldRev();
+					//System.out.println("[DBG6] old query Node mQTreeRightRev: " + mQTreeRightRev + " source range: " + mQTreeRightRev.getEntity().getSourceRange());
+					//System.out.println("[DBG6] new query Node mQTreeLeftRev: " + mQTreeLeftRev + " source range: " + mQTreeLeftRev.getEntity().getSourceRange());
+					MethodDeclaration oldQueryMethodDecl = mQTreeRightRev.getMethodDeclaration();
+					MethodDeclaration newQueryMethodDecl = mQTreeLeftRev.getMethodDeclaration();
+					
 					//UTChangeDistiller diffTTree = new UTChangeDistiller();
 					//diffTTree.diffBlock(selectedRightRev.copy(), selectedLeftRev.copy()); // right -> left
 					//System.out.println("[DBG6] source code changes between selectedRightRev and selectedLeftRev:");
@@ -253,25 +264,39 @@ public class CriticsOverlayViewMenu {
 						Node missingInsertionNode = missingInsertionNodes.get(i);	
 						
 						String incorrectInsertionNodeStr = "";
+						String incorrectInsertionNodeStr2 = "";
 						String incorrectInsertionNodeLabel = incorrectInsertionNode.getLabel().name();
 						String incorrectInsertionNodeValue = incorrectInsertionNode.getValue();
 						if (incorrectInsertionNodeLabel.equals("FOR_STATEMENT")) {							
-							incorrectInsertionNodeStr = removeParen(incorrectInsertionNodeValue);
+							//incorrectInsertionNodeStr = removeParen(incorrectInsertionNodeValue);
+							ForStatement forStmt = (ForStatement) getASTNode(incorrectInsertionNode, newMethodDecl);
+							//System.out.println("[DBG6] forStmt: \n" + forStmt);
+							incorrectInsertionNodeStr = forStmt.getExpression().toString();
+							//System.out.println("[DBG6] forStmt expression: " + incorrectInsertionNodeStr);
+							incorrectInsertionNodeStr2 = srcNewFile.substring(forStmt.getExpression().getStartPosition(), forStmt.getExpression().getStartPosition() + forStmt.getExpression().getLength());
 						}
 						else {
 							incorrectInsertionNodeStr = getLabel(incorrectInsertionNodeLabel) + incorrectInsertionNodeValue;
+							incorrectInsertionNodeStr2 = getLabel(incorrectInsertionNodeLabel) + incorrectInsertionNodeValue;
 						}						
 						System.out.println("[DBG6] incorrectInsertionNodeStr: " + incorrectInsertionNodeStr);
+						System.out.println("[DBG6] incorrectInsertionNodeStr2: " + incorrectInsertionNodeStr2);
 						String missingInsertionNodeStr = "";
+						String missingInsertionNodeStr2 = "";
 						String missingInsertionNodeLabel = missingInsertionNode.getLabel().name();
 						String missingInsertionNodeValue = missingInsertionNode.getValue();
 						if (missingInsertionNodeLabel.equals("FOR_STATEMENT")) {							
-							missingInsertionNodeStr = removeParen(missingInsertionNodeValue);
+							//missingInsertionNodeStr = removeParen(missingInsertionNodeValue);
+							ForStatement forStmt = (ForStatement) getASTNode(missingInsertionNode, newQueryMethodDecl);
+							missingInsertionNodeStr = forStmt.getExpression().toString();
+							missingInsertionNodeStr2 = srcNewViewer.substring(forStmt.getExpression().getStartPosition(), forStmt.getExpression().getStartPosition() + forStmt.getExpression().getLength());
 						}
 						else {
 							missingInsertionNodeStr = getLabel(missingInsertionNodeLabel) + missingInsertionNodeValue;
+							missingInsertionNodeStr2 = getLabel(missingInsertionNodeLabel) + missingInsertionNodeValue;
 						}						
 						System.out.println("[DBG6] missingInsertionNodeStr: " + missingInsertionNodeStr);
+						System.out.println("[DBG6] missingInsertionNodeStr2: " + missingInsertionNodeStr2);
 						int startIndex = updatedMethodBodyStms.indexOf(incorrectInsertionNodeStr);												
 						int endIndex = startIndex + incorrectInsertionNodeStr.length();
 						System.out.println("[DBG6] startIndex: " + startIndex + " endIndex: " + endIndex);
@@ -280,12 +305,12 @@ public class CriticsOverlayViewMenu {
 //						String missingInsertionNodeStr2 = srcNewViewer.substring(missingInsertionNode.getEntity().getStartPosition(), missingInsertionNode.getEntity().getEndPosition() + 1);
 //						int startIndex2 =  incorrectInsertionNode.getEntity().getStartPosition() - lstNewStms.get(0).getStartPosition();
 //						int endIndex2 = startIndex2 + incorrectInsertionNodeStr2.length();
-						int startIndex2 = updatedMethodBodyStms2.indexOf(incorrectInsertionNodeStr);												
-						int endIndex2 = startIndex2 + incorrectInsertionNodeStr.length();
+						int startIndex2 = updatedMethodBodyStms2.indexOf(incorrectInsertionNodeStr2);												
+						int endIndex2 = startIndex2 + incorrectInsertionNodeStr2.length();
 						System.out.println("[DBG6] startIndex2: " + startIndex2 + " endIndex2: " + endIndex2);						
 						//System.out.println("[DBG6] updatedMethodBodyStms2.substring(startIndex2, endIndex2): \n" + updatedMethodBodyStms2.substring(startIndex2, endIndex2));
 						updatedMethodBodyStms = UTStr.replace(updatedMethodBodyStms, missingInsertionNodeStr, startIndex, endIndex);						
-						updatedMethodBodyStms2 = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodeStr, startIndex2, endIndex2);
+						updatedMethodBodyStms2 = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodeStr2, startIndex2, endIndex2);
 					}
 					System.out.println("[DBG6] updatedMethodBodyStms: \n" + updatedMethodBodyStms);
 					System.out.println("[DBG6] updatedMethodBodyStms2: \n" + updatedMethodBodyStms2);
@@ -390,9 +415,9 @@ public class CriticsOverlayViewMenu {
 					int missingDeletionNodesSize = missingDeletionNodes.size();
 					String missingDeletionNodesLast = getLabel(missingDeletionNodes.get(missingDeletionNodesSize-1).getLabel().name()) + missingDeletionNodes.get(missingDeletionNodesSize-1).getValue();
 					//System.out.println("[DBG6] missingDeletionNodesLast: " + missingDeletionNodesLast);
-					int startIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesFirst);
-					int endIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesLast) + missingDeletionNodesLast.length();
-					String missingDeletionNodesRange = newMethodBodyStms.substring(startIndexMissingDeletion, endIndexMissingDeletion);					
+					int startIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesFirst);					
+					int endIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesLast) + missingDeletionNodesLast.length();					
+					String missingDeletionNodesRange = newMethodBodyStms.substring(startIndexMissingDeletion, endIndexMissingDeletion);										
 					System.out.println("[DBG6] missingDeletionNodesRange: \n" + missingDeletionNodesRange);
 					int startIndexMissingDeletion2 = missingDeletionNodes.get(0).getEntity().getStartPosition() - lstNewStms.get(0).getStartPosition();
 					int endIndexMissingDeletion2 = missingDeletionNodes.get(missingDeletionNodesSize-1).getEntity().getEndPosition() - lstNewStms.get(0).getStartPosition();
@@ -444,6 +469,10 @@ public class CriticsOverlayViewMenu {
 
 	}
 	
+	private ASTNode getASTNode(Node node, ASTNode root) {
+		UTASTNodeSearcher searcher = new UTASTNodeSearcher(node);
+		return searcher.search(root);
+	}
 	
 	/**
 	 * Adds the menu to checkbox tree viewer.
