@@ -276,14 +276,16 @@ public class CriticsOverlayViewMenu {
 						int endIndex = startIndex + incorrectInsertionNodeStr.length();
 						System.out.println("[DBG6] startIndex: " + startIndex + " endIndex: " + endIndex);
 						
-						String incorrectInsertionNodeStr2 = srcNewFile.substring(incorrectInsertionNode.getEntity().getStartPosition(), incorrectInsertionNode.getEntity().getEndPosition() + 1);
-						String missingInsertionNodeStr2 = srcNewViewer.substring(missingInsertionNode.getEntity().getStartPosition(), missingInsertionNode.getEntity().getEndPosition() + 1);
-						int startIndex2 =  incorrectInsertionNode.getEntity().getStartPosition() - lstNewStms.get(0).getStartPosition();
-						int endIndex2 = startIndex2 + incorrectInsertionNodeStr2.length();
+//						String incorrectInsertionNodeStr2 = srcNewFile.substring(incorrectInsertionNode.getEntity().getStartPosition(), incorrectInsertionNode.getEntity().getEndPosition() + 1);
+//						String missingInsertionNodeStr2 = srcNewViewer.substring(missingInsertionNode.getEntity().getStartPosition(), missingInsertionNode.getEntity().getEndPosition() + 1);
+//						int startIndex2 =  incorrectInsertionNode.getEntity().getStartPosition() - lstNewStms.get(0).getStartPosition();
+//						int endIndex2 = startIndex2 + incorrectInsertionNodeStr2.length();
+						int startIndex2 = updatedMethodBodyStms2.indexOf(incorrectInsertionNodeStr);												
+						int endIndex2 = startIndex2 + incorrectInsertionNodeStr.length();
 						System.out.println("[DBG6] startIndex2: " + startIndex2 + " endIndex2: " + endIndex2);						
-						System.out.println("[DBG6] newMethodBodyStms2.substring(startIndex2, endIndex2): \n" + newMethodBodyStms2.substring(startIndex2, endIndex2));
+						//System.out.println("[DBG6] updatedMethodBodyStms2.substring(startIndex2, endIndex2): \n" + updatedMethodBodyStms2.substring(startIndex2, endIndex2));
 						updatedMethodBodyStms = UTStr.replace(updatedMethodBodyStms, missingInsertionNodeStr, startIndex, endIndex);						
-						updatedMethodBodyStms2 = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodeStr2, startIndex2, endIndex2);
+						updatedMethodBodyStms2 = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodeStr, startIndex2, endIndex2);
 					}
 					System.out.println("[DBG6] updatedMethodBodyStms: \n" + updatedMethodBodyStms);
 					System.out.println("[DBG6] updatedMethodBodyStms2: \n" + updatedMethodBodyStms2);
