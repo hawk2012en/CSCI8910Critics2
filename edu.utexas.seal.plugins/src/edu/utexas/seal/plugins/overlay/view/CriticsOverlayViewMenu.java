@@ -410,14 +410,18 @@ public class CriticsOverlayViewMenu {
 					
 					String updatedMethodBodyStms = newMethodBodyStms;
 					String updatedMethodBodyStms2 = newMethodBodyStms2;
-					String missingDeletionNodesFirst = getLabel(missingDeletionNodes.get(0).getLabel().name()) + missingDeletionNodes.get(0).getValue();
+					//String missingDeletionNodesFirst = getLabel(missingDeletionNodes.get(0).getLabel().name()) + missingDeletionNodes.get(0).getValue();
 					//System.out.println("[DBG6] missingDeletionNodesFirst: " + missingDeletionNodesFirst);
 					int missingDeletionNodesSize = missingDeletionNodes.size();
-					String missingDeletionNodesLast = getLabel(missingDeletionNodes.get(missingDeletionNodesSize-1).getLabel().name()) + missingDeletionNodes.get(missingDeletionNodesSize-1).getValue();
+					//String missingDeletionNodesLast = getLabel(missingDeletionNodes.get(missingDeletionNodesSize-1).getLabel().name()) + missingDeletionNodes.get(missingDeletionNodesSize-1).getValue();
 					//System.out.println("[DBG6] missingDeletionNodesLast: " + missingDeletionNodesLast);
-					int startIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesFirst);					
-					int endIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesLast) + missingDeletionNodesLast.length();					
-					String missingDeletionNodesRange = newMethodBodyStms.substring(startIndexMissingDeletion, endIndexMissingDeletion);										
+					ASTNode missingDeletionNodesFirst = getASTNode(missingDeletionNodes.get(0), newMethodDecl);
+					ASTNode missingDeletionNodesLast = getASTNode(missingDeletionNodes.get(missingDeletionNodesSize-1), newMethodDecl);
+					//int startIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesFirst);					
+					int startIndexMissingDeletion = missingDeletionNodesFirst.getStartPosition() - lstNewStms.get(0).getStartPosition();
+					//int endIndexMissingDeletion = newMethodBodyStms.indexOf(missingDeletionNodesLast) + missingDeletionNodesLast.length();					
+					int endIndexMissingDeletion = missingDeletionNodesLast.getStartPosition() + missingDeletionNodesLast.getLength() + 1 - lstNewStms.get(0).getStartPosition();
+					String missingDeletionNodesRange = newMethodBodyStms2.substring(startIndexMissingDeletion, endIndexMissingDeletion);										
 					System.out.println("[DBG6] missingDeletionNodesRange: \n" + missingDeletionNodesRange);
 					int startIndexMissingDeletion2 = missingDeletionNodes.get(0).getEntity().getStartPosition() - lstNewStms.get(0).getStartPosition();
 					int endIndexMissingDeletion2 = missingDeletionNodes.get(missingDeletionNodesSize-1).getEntity().getEndPosition() - lstNewStms.get(0).getStartPosition();
@@ -438,7 +442,7 @@ public class CriticsOverlayViewMenu {
 					String missingInsertionNodesRange2 = newQueryMethodBodyStms2.substring(startIndexMissingInsertion2, endIndexMissingInsertion2);
 					System.out.println("[DBG6] missingInsertionNodesRange2: \n" + missingInsertionNodesRange2);
 					
-					updatedMethodBodyStms = UTStr.replace(updatedMethodBodyStms, missingInsertionNodesRange, startIndexMissingDeletion, endIndexMissingDeletion);
+					updatedMethodBodyStms = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodesRange, startIndexMissingDeletion, endIndexMissingDeletion);
 					updatedMethodBodyStms2 = UTStr.replace(updatedMethodBodyStms2, missingInsertionNodesRange2, startIndexMissingDeletion2, endIndexMissingDeletion2);
 					System.out.println("[DBG6] updatedMethodBodyStms: \n" + updatedMethodBodyStms);
 					System.out.println("[DBG6] updatedMethodBodyStms2: \n" + updatedMethodBodyStms2);
