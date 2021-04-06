@@ -1617,8 +1617,13 @@ public class UTASTNodeConverter extends UTASTNodeCoverterAbstract {
 	 * @return the node
 	 */
 	private Node convertClassDeclaration(String className, String sourceCode) {
+		System.out.println("[DBG UTASTNodeConverter.convertClassDeclaration()] className: " + className);
+		System.out.println("[DBG UTASTNodeConverter.convertClassDeclaration()] sourceCode.length(): " + sourceCode.length());
 		JavaCompilation compilation = UTCompilationUtils.compileSource(sourceCode);
 		TypeDeclaration type = UTCompilationUtils.findType(compilation.getCompilationUnit(), className);
+		if (type == null) {
+			System.out.println("[DBG UTASTNodeConverter.convertClassDeclaration()] qTreeNewRev range: type is null!");
+		}
 		Node root = new Node(JavaEntityType.CLASS, className);
 		root.setEntity(new SourceCodeEntity(className, JavaEntityType.CLASS, new SourceRange(type.declarationSourceStart, type.declarationSourceEnd)));
 		sDeclarationConverter.initialize(root, compilation.getScanner());

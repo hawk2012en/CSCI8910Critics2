@@ -201,19 +201,26 @@ public final class UTCompilationUtils {
 	}
 
 	public static TypeDeclaration findType(CompilationUnitDeclaration cu, String typeName) {
-		for (TypeDeclaration type : cu.types) {
+		System.out.println("[DBG UTCompilationUtils.findType()] typeName: " + typeName);
+		System.out.println("[DBG UTCompilationUtils.findType()] cu.newName: " + cu.newName);
+		System.out.println("[DBG UTCompilationUtils.findType()] cu.sourceStart(): " + cu.sourceStart());
+		System.out.println("[DBG UTCompilationUtils.findType()] cu.sourceEnd(): " + cu.sourceEnd());
+		System.out.println("[DBG UTCompilationUtils.findType()] cu.types.length: " + cu.types.length);
+		for (TypeDeclaration type : cu.types) {			
+			System.out.println("[DBG UTCompilationUtils.findType()] String.valueOf(type.name): " + String.valueOf(type.name));
 			if(type.memberTypes != null){
 				for (TypeDeclaration memberType : type.memberTypes) {
+					System.out.println("[DBG UTCompilationUtils.findType()] String.valueOf(memberType.name): " + String.valueOf(memberType.name));
 					if (String.valueOf(memberType.name).equals(typeName)) {
 						return memberType;
 					}
 				}
-			}else{
+			}
+			//else{				
 				if (String.valueOf(type.name).equals(typeName)) {
 					return type;
 				}
-			}
-			
+			//}			
 		}
 		return null;
 	}
