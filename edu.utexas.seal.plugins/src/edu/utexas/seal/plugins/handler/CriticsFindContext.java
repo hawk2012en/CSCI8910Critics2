@@ -134,6 +134,9 @@ public class CriticsFindContext extends CriticsCommonHandler {
 		UTLog.println(false, "[RST] # OF CLASSES: " + (cntClass - 1));
 		UTLog.println(false, "[RST] # OF METHODS: " + (cntMethod - 1));
 		UTLog.println(false, "DBG__________________________________________");
+		System.out.println("[RST] # OF CLASSES: " + (cntClass - 1));
+		System.out.println("[RST] # OF METHODS: " + (cntMethod - 1));
+		System.out.println("DBG__________________________________________");
 		return null;
 	}
 
@@ -159,10 +162,14 @@ public class CriticsFindContext extends CriticsCommonHandler {
 		if (trace1) {
 			System.out.println("[DBG] Node qTreeOldRev (QTree Old Rev)");
 			qTreeOldRev.print();
+			System.out.println("[DBG] Node qTreeParGenOldRev (QTree Partially Generalized Old Rev)");
+			qTreeParGenOldRev.print();
 			System.out.println("------------------------------------------");
 			System.out.println("[DBG] Node qTreeNewRev (QTree New Rev)");
 			qTreeNewRev.print();
-			System.out.println("[DBG] Number of all Nodes in qTreeNewRev: " + qTreeNewRev.getAllNodes().size());
+			System.out.println("[DBG] Node qTreeParGenNewRev (QTree Partially Generalized New Rev)");
+			qTreeParGenNewRev.print();
+			System.out.println("[DBG] Number of all Nodes in qTreeNewRev: " + qTreeNewRev.getAllNodes().size());			
 //			System.out.println("**************   "
 //					+ qTreeNewRev.getAllNodes().size() + "   **************");
 			System.out.println("==========================================");
@@ -181,19 +188,23 @@ public class CriticsFindContext extends CriticsCommonHandler {
 			findSimilarContexts(UTCriticsPairFileInfo.getRightIPackages(),
 					LR.RIGHT);
 		} else {
-			HashMap<String, Set<String>> leftFilter = filterLeft.getFilter();
+			HashMap<String, Set<String>> leftFilter = filterLeft.getFilter();			
 			HashMap<String, Set<String>> rightFilter = filterRight.getFilter();
 			List<String> leftQueries = getQueries(qTreeNewRev);
+			System.out.println("[DBG] leftQueries: " + leftQueries);
 			List<String> rightQueries = getQueries(qTreeOldRev);
+			System.out.println("[DBG] rightQueries: " + rightQueries);
 			Set<String> leftFiles = filterFiles(leftQueries, leftFilter);
+			System.out.println("[DBG] leftFiles.size(): " + leftFiles.size());
 			Set<String> rightFiles = filterFiles(rightQueries, rightFilter);
+			System.out.println("[DBG] rightFiles.size(): " + rightFiles.size());
 			for(String file : leftFiles) {
 				System.out.println("[DBG] leftFile: " + file);
 			}
 			for(String file : rightFiles) {
 				System.out.println("[DBG] rightFile: " + file);
 			}			
-			if (leftFiles == null || rightFiles == null) {
+			if (leftFiles == null || rightFiles == null || leftFiles.size() == 0 || rightFiles.size() == 0) {
 				findSimilarContexts(UTCriticsPairFileInfo.getLeftIPackages(),
 						LR.LEFT);
 				findSimilarContexts(UTCriticsPairFileInfo.getRightIPackages(),
@@ -201,8 +212,14 @@ public class CriticsFindContext extends CriticsCommonHandler {
 			} else {
 				List<ICompilationUnit> icusLeft = getICUnits(
 						UTCriticsPairFileInfo.getLeftIPackages(), leftFiles);
+				System.out.println("[DBG] icusLeft.size(): " + icusLeft.size());
+				System.out.println("[DBG] icusLeft.getAbsolutePath(): " + icusLeft.get(0).getPath().toFile().getAbsolutePath());
+				System.out.println("[DBG] icusLeft.getPath(): " + icusLeft.get(0).getPath().toFile().getPath());
 				List<ICompilationUnit> icusRight = getICUnits(
 						UTCriticsPairFileInfo.getRightIPackages(), rightFiles);
+				System.out.println("[DBG] icusRight.size(): " + icusRight.size());
+				System.out.println("[DBG] icusRight.getAbsolutePath(): " + icusRight.get(0).getPath().toFile().getAbsolutePath());
+				System.out.println("[DBG] icusRight.getPath(): " + icusRight.get(0).getPath().toFile().getPath());
 				findSimilarContexts(icusLeft, LR.LEFT);
 				findSimilarContexts(icusRight, LR.RIGHT);
 			}
@@ -219,7 +236,8 @@ public class CriticsFindContext extends CriticsCommonHandler {
 			IPackageFragment pkgElem = iPackageFragments[i];
 			if (pkgElem.getKind() == IPackageFragmentRoot.K_SOURCE) {
 				for (ICompilationUnit unit : pkgElem.getCompilationUnits()) {
-					String path = unit.getPath().toFile().getAbsolutePath();
+					//String path = unit.getPath().toFile().getAbsolutePath();
+					String path = unit.getPath().toFile().getPath();
 					if (set.contains(path) && !result.contains(unit)) {
 						result.add(unit);
 					}

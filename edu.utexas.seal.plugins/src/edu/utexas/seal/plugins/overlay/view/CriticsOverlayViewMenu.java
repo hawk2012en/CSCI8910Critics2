@@ -315,6 +315,7 @@ public class CriticsOverlayViewMenu {
 					System.out.println("[DBG6] updatedMethodBodyStms: \n" + updatedMethodBodyStms);
 					System.out.println("[DBG6] updatedMethodBodyStms2: \n" + updatedMethodBodyStms2);
 					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);
+					new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms2);
 				}
 			}
 		});
@@ -447,6 +448,7 @@ public class CriticsOverlayViewMenu {
 					System.out.println("[DBG6] updatedMethodBodyStms: \n" + updatedMethodBodyStms);
 					System.out.println("[DBG6] updatedMethodBodyStms2: \n" + updatedMethodBodyStms2);
 					//new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms);
+					new ReplaceMethodBodyAnalyzer(prjNameLeft, packageName, UTStr.getClassNameFromJavaFile(className), selectedLeftRev.getValue(), updatedMethodBodyStms2);
 				}
 			}
 		});
