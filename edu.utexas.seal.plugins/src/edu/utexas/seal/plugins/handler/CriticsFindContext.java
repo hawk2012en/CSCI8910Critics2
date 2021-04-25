@@ -236,8 +236,8 @@ public class CriticsFindContext extends CriticsCommonHandler {
 			IPackageFragment pkgElem = iPackageFragments[i];
 			if (pkgElem.getKind() == IPackageFragmentRoot.K_SOURCE) {
 				for (ICompilationUnit unit : pkgElem.getCompilationUnits()) {
-					//String path = unit.getPath().toFile().getAbsolutePath();
-					String path = unit.getPath().toFile().getPath();
+					String path = unit.getPath().toFile().getAbsolutePath();
+					//String path = unit.getPath().toFile().getPath();
 					if (set.contains(path) && !result.contains(unit)) {
 						result.add(unit);
 					}
