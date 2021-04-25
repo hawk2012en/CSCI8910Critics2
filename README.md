@@ -4,6 +4,8 @@ An Eclipse plug-in to search similar program changes and detect/fix missing/inco
 This is an extended version of [CRITICS](https://github.com/tianyi-zhang/Critics) called CRITICS2. 
 CRITICS2 will not only allow code reviewers to summarize similar consistent changes and find any inconsistent anomalies, 
 but also allow code developers to automatically mitigate those inconsistent anomalies (ie. applying missing updates or fixing incorrect updates).
+Two newly implemented features can be shown in this [short demo](project-demo-report/CRITICS2-Final-Demo2.mp4).
+The details of CRITICS2 can be viewed in this [full report](project-demo-report/WangJun-ProjectFinalReport.pdf).
 
 ## Set up
 1. Install Subclipse 1.8.x ([instruction](https://devjack.de/how-to-install-subclipse-1-8-x-in-eclipse-luna/)). It is recommended to use Subclipse 1.8.x instead of 1.6.x because Subclipse 1.6.x may introduce circular dependencies when exporting Critics as deployable plugin jars. 
